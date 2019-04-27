@@ -9,8 +9,8 @@ class Game extends Component {
       p2health: 50,
       p1buys: 0,
       p2buys: 0,
-      p1attacks: 10,
-      p2attacks: 10
+      p1attacks: 0,
+      p2attacks: 0
     }
   }
 
@@ -32,18 +32,18 @@ class Game extends Component {
     });
   }
 
-  minus(name, i) {
+  minus(name, i, amount=1) {
     const s = `p${i}${name}`
-    if (this.state[s] > 0) {
-      this.setState({
-        [s]: this.state[s] - 1
-      });
-    }
+    const setTo = this.state[s] - amount
+    this.setState({
+      [s]: (setTo < 0)? 0 : setTo
+    });
   }
 
   attackPlayer(i) {
-    this.minus('health', this.opponent(i));
-    this.minus('attacks', i);
+    const attackFor = this.state[`p${i}attacks`];
+    this.minus('health', this.opponent(i), attackFor);
+    this.minus('attacks', i, attackFor);
   }
 
   attackShip(i) {
@@ -61,31 +61,45 @@ class Game extends Component {
         return m;
       }, {})
       Object.assign(props, {
+        name: `Player ${i}`,
         attackPlayer: () => this.attackPlayer(i),
         attackShip: () => this.attackShip(i),
         endTurn: () => this.endTurn(i),
         addBuy: () => this.plus('buys', i),
         addAttack: () => this.plus('attacks', i),
+        addHealth: () => this.plus('health', i),
         spend: () => this.spend(i)
       })
       return <Player { ...props } key={ `p${i}` }/>
     });
-    return <div>{ players }</div>
+    return <div className="field">{ players }</div>
   }
 }
 
 function Player(props) {
-  const { health, attacks, buys, attackPlayer, attackShip, endTurn, addBuy, addAttack, spend } = props;
+  const { name, health, attacks, buys, attackPlayer, attackShip, endTurn, addHealth, addBuy, addAttack, spend } = props;
   return <div className="player">
-    <button onClick={ addAttack }>+ Attack</button>
-    <button onClick={ addBuy }>+ Buy</button>
-    <p>health: {health}</p>
-    <p>attacks: { attacks }</p>
-    <button onClick={ attackPlayer }>Attack Player</button>
-    <button onClick={ attackShip }>Attack Ship</button>
-    <p>buys: { buys }</p>
-    <button onClick={ spend }>Spend 1</button>
-    <button onClick={ endTurn }>End Turn</button>
+    <header>{ name }</header>
+    <ul className="stats">
+      <li>{ health }</li>
+      <li>{ attacks }</li>
+      <li>{ buys }</li>
+    </ul>
+    <fieldset>
+      <button onClick={ addHealth }>+ Health</button>
+      <button onClick={ addAttack }>+ Attack</button>
+      <button onClick={ addBuy }>+ Buy</button>
+    </fieldset>
+    <fieldset>
+      <button onClick={ attackPlayer }>Attack Player</button>
+      <button onClick={ attackShip }>Attack Ship</button>
+    </fieldset>
+    <fieldset>
+      <button onClick={ spend }>Spend 1</button>
+    </fieldset>
+    <fieldset>
+      <button onClick={ endTurn }>End Turn</button>
+    </fieldset>
   </div>
 }
 
